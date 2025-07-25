@@ -57,6 +57,10 @@
             display: none;
             margin-top: 20px;
             background-color: #2ecc71;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 5px;
         }
         #downloadBtn:hover {
             background-color: #27ae60;
@@ -86,19 +90,20 @@
     </div>
     
     <video id="preview" controls></video>
-    <a id="downloadBtn" class="button" download>💾 Videoyu İndir</a>
+    <a id="downloadBtn" download>💾 Videoyu İndir</a>
 
-    <!-- EN STABİL FFMPEG VERSİYONLARI -->
-    <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.10.1/dist/ffmpeg.min.js"></script>
+    <!-- FFmpeg Kütüphaneleri -->
+    <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
     <script>
-        // TEST EDİLMİŞ VE ÇALIŞAN VERSİYON
+        // SharedArrayBuffer Hatası Çözümü için Özel Konfigürasyon
         const { createFFmpeg, fetchFile } = FFmpeg;
         const ffmpeg = createFFmpeg({ 
             log: true,
-            corePath: 'https://unpkg.com/@ffmpeg/core@0.10.0/dist/ffmpeg-core.js'
+            corePath: 'https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js',
+            mainName: 'main' // Proxy_main hatası çözümü
         });
 
-        // DOM Elements
+        // DOM Elementleri
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
         const convertBtn = document.getElementById('convertBtn');
@@ -119,7 +124,7 @@
             }
         });
 
-        // Dönüştürme Butonu
+        // Dönüştürme İşlemi
         convertBtn.addEventListener('click', async () => {
             if (!selectedFile) {
                 alert("Lütfen önce bir fotoğraf seçin!");
@@ -151,7 +156,7 @@
                 // Dosyayı FFmpeg'e Yükle
                 ffmpeg.FS('writeFile', 'input.jpg', await fetchFile(selectedFile));
 
-                // TEMEL VE KARARLI FFMPEG KOMUTU
+                // ÇALIŞAN FFMPEG KOMUTU
                 await ffmpeg.run(
                     '-loop', '1',
                     '-i', 'input.jpg',
