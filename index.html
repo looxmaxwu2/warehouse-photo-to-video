@@ -1,235 +1,123 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Fotoğrafı Videoya Dönüştür - w-vv.space Tema (Karanlık Tema)</title>
-<style>
-  /* Reset */
-  * {
-    box-sizing: border-box;
-  }
-
-  body {
-    margin: 0;
-    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #121212;
-    color: #E0E0E0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-  }
-
-  .container {
-    background: #1E1E2F;
-    border-radius: 24px;
-    box-shadow: 0 20px 60px rgba(30, 64, 175, 0.4);
-    padding: 3rem 3.5rem;
-    max-width: 380px;
-    width: 100%;
-    text-align: center;
-    transition: box-shadow 0.3s ease;
-  }
-  .container:hover {
-    box-shadow: 0 25px 80px rgba(37, 99, 235, 0.7);
-  }
-
-  h2 {
-    font-weight: 700;
-    font-size: 1.8rem;
-    margin-bottom: 1.8rem;
-    color: #4F8EF7;
-  }
-
-  input[type="file"],
-  input[type="number"] {
-    width: 100%;
-    padding: 14px 16px;
-    margin: 12px 0;
-    font-size: 1rem;
-    border-radius: 12px;
-    border: 1.8px solid #33354A;
-    background-color: #2B2B3F;
-    color: #E0E0E0;
-    transition: border-color 0.3s ease, background-color 0.3s ease;
-    outline-offset: 2px;
-  }
-  input[type="file"]:focus,
-  input[type="number"]:focus {
-    border-color: #4F8EF7;
-    background-color: #383955;
-  }
-
-  button {
-    margin-top: 18px;
-    width: 100%;
-    padding: 16px 0;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: white;
-    background-color: #4F8EF7;
-    border: none;
-    border-radius: 14px;
-    cursor: pointer;
-    box-shadow: 0 8px 16px rgba(79, 142, 247, 0.6);
-    transition: background-color 0.3s ease, box-shadow 0.3s ease;
-  }
-  button:hover:not(:disabled) {
-    background-color: #3B6BD1;
-    box-shadow: 0 10px 24px rgba(59, 107, 209, 0.8);
-  }
-  button:disabled {
-    background-color: #6C7BBD;
-    cursor: not-allowed;
-    box-shadow: none;
-  }
-
-  #loading {
-    margin-top: 16px;
-    font-weight: 700;
-    color: #4F8EF7;
-    animation: pulse 1.3s infinite;
-    user-select: none;
-  }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
-  }
-
-  #videoContainer {
-    margin-top: 24px;
-  }
-
-  video {
-    width: 100%;
-    border-radius: 18px;
-    box-shadow: 0 8px 24px rgba(79, 142, 247, 0.6);
-    outline-offset: 2px;
-    background-color: black;
-  }
-
-  a {
-    display: inline-block;
-    margin-top: 16px;
-    font-weight: 700;
-    color: #4F8EF7;
-    text-decoration: none;
-    font-size: 1.05rem;
-    user-select: none;
-  }
-  a:hover {
-    text-decoration: underline;
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fotoğraf → Video Dönüştürücü</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .upload-area { border: 2px dashed #3498db; padding: 30px; text-align: center; cursor: pointer; }
+        #preview { max-width: 100%; display: none; }
+        #loading { display: none; }
+        #downloadBtn { display: none; margin-top: 20px; }
+    </style>
 </head>
 <body>
-  <div class="container" role="main" aria-label="Fotoğrafı videoya dönüştürme arayüzü">
-    <h2>Fotoğrafı Videoya Dönüştür</h2>
-    <input type="file" id="imgInput" accept="image/*" aria-label="Fotoğraf seçin" />
-    <input type="number" id="duration" min="1" value="10" aria-label="Video süresi (saniye)" />
-    <button id="startBtn" disabled>Videoya Dönüştür</button>
-    <div id="loading" aria-live="polite" style="display:none;">🎬 Video oluşturuluyor, lütfen bekleyin...</div>
-    <div id="videoContainer"></div>
-    <canvas id="canvas" style="display:none;"></canvas>
-  </div>
+    <h1>Fotoğrafı Videoya Dönüştür</h1>
+    
+    <div class="upload-area" id="uploadArea">
+        <p>📷 Fotoğrafınızı sürükleyip bırakın veya tıklayarak seçin</p>
+        <input type="file" id="fileInput" accept="image/*" style="display: none;">
+    </div>
+    
+    <div>
+        <label for="duration">Video Süresi (saniye):</label>
+        <input type="number" id="duration" value="3" min="1" max="10">
+    </div>
+    
+    <div>
+        <label for="format">Video Formatı:</label>
+        <select id="format">
+            <option value="mp4">MP4</option>
+            <option value="webm">WebM</option>
+        </select>
+    </div>
+    
+    <button id="convertBtn">Videoya Dönüştür</button>
+    
+    <div id="loading">⏳ Video oluşturuluyor...</div>
+    
+    <video id="preview" controls></video>
+    <a id="downloadBtn" download>💾 Videoyu İndir</a>
 
-<script>
-  const imgInput = document.getElementById('imgInput');
-  const startBtn = document.getElementById('startBtn');
-  const loading = document.getElementById('loading');
-  const videoContainer = document.getElementById('videoContainer');
-  const durationInput = document.getElementById('duration');
-  const canvas = document.getElementById('canvas');
-  const ctx = canvas.getContext('2d');
-
-  let img = new Image();
-  let imgLoaded = false;
-
-  imgInput.addEventListener('change', e => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = ev => {
-      img.src = ev.target.result;
-    };
-    reader.readAsDataURL(file);
-  });
-
-  img.onload = () => {
-    imgLoaded = true;
-    startBtn.disabled = false;
-  };
-
-  startBtn.addEventListener('click', () => {
-    if (!imgLoaded) {
-      alert('Lütfen bir fotoğraf yükleyin.');
-      return;
-    }
-    const duration = parseInt(durationInput.value);
-    if (isNaN(duration) || duration < 1) {
-      alert('Geçerli bir video süresi girin.');
-      return;
-    }
-
-    const totalDuration = duration + 5;
-    const fps = 30;
-    const totalFrames = totalDuration * fps;
-
-    canvas.width = img.width;
-    canvas.height = img.height;
-    ctx.drawImage(img, 0, 0);
-
-    const stream = canvas.captureStream(fps);
-    const chunks = [];
-    const recorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
-
-    recorder.ondataavailable = e => chunks.push(e.data);
-    recorder.onstop = async () => {
-      const fullBlob = new Blob(chunks, { type: 'video/webm' });
-      const url = URL.createObjectURL(fullBlob);
-
-      loading.style.display = 'none';
-      videoContainer.innerHTML = '';
-
-      const video = document.createElement('video');
-      video.src = url;
-      video.controls = true;
-      video.autoplay = false;
-      video.currentTime = 5;
-
-      videoContainer.appendChild(video);
-
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'foto_video.webm';
-      a.textContent = '📥 Videoyu İndir';
-      videoContainer.appendChild(a);
-    };
-
-    loading.style.display = 'block';
-    videoContainer.innerHTML = '';
-    startBtn.disabled = true;
-
-    recorder.start();
-
-    let frameCount = 0;
-    function drawFrame() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(img, 0, 0);
-      frameCount++;
-      if (frameCount < totalFrames) {
-        requestAnimationFrame(drawFrame);
-      }
-    }
-    drawFrame();
-
-    setTimeout(() => {
-      recorder.stop();
-      startBtn.disabled = false;
-    }, totalDuration * 1000);
-  });
-</script>
+    <!-- FFmpeg.js kütüphanesi -->
+    <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
+    
+    <script>
+        const { createFFmpeg, fetchFile } = FFmpeg;
+        const ffmpeg = createFFmpeg({ log: true });
+        
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const convertBtn = document.getElementById('convertBtn');
+        const loadingDiv = document.getElementById('loading');
+        const preview = document.getElementById('preview');
+        const downloadBtn = document.getElementById('downloadBtn');
+        
+        let selectedFile = null;
+        
+        // Dosya seçimi
+        uploadArea.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files[0]) {
+                selectedFile = fileInput.files[0];
+                uploadArea.innerHTML = `<p>✅ Seçilen dosya: ${selectedFile.name}</p>`;
+            }
+        });
+        
+        // Dönüştürme butonu
+        convertBtn.addEventListener('click', async () => {
+            if (!selectedFile) return alert("Lütfen bir fotoğraf seçin!");
+            
+            const duration = document.getElementById('duration').value;
+            const format = document.getElementById('format').value;
+            
+            loadingDiv.style.display = "block";
+            convertBtn.disabled = true;
+            
+            try {
+                // FFmpeg yükleme
+                if (!ffmpeg.isLoaded()) {
+                    await ffmpeg.load();
+                }
+                
+                // Dosyayı FFmpeg'e yükle
+                ffmpeg.FS('writeFile', 'input.jpg', await fetchFile(selectedFile));
+                
+                // Video oluşturma komutu
+                await ffmpeg.run(
+                    '-loop', '1',
+                    '-i', 'input.jpg',
+                    '-t', duration,
+                    '-vf', 'scale=640:-2',
+                    '-c:v', format === 'mp4' ? 'libx264' : 'libvpx',
+                    '-pix_fmt', 'yuv420p',
+                    `output.${format}`
+                );
+                
+                // Sonucu al
+                const data = ffmpeg.FS('readFile', `output.${format}`);
+                const videoUrl = URL.createObjectURL(
+                    new Blob([data.buffer], { type: `video/${format}` })
+                );
+                
+                // Önizleme göster
+                preview.src = videoUrl;
+                preview.style.display = "block";
+                
+                // İndirme butonunu ayarla
+                downloadBtn.href = videoUrl;
+                downloadBtn.download = `video.${format}`;
+                downloadBtn.style.display = "inline-block";
+                
+            } catch (err) {
+                console.error(err);
+                alert("Hata oluştu: " + err.message);
+            } finally {
+                loadingDiv.style.display = "none";
+                convertBtn.disabled = false;
+            }
+        });
+    </script>
 </body>
 </html>
