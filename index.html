@@ -2,44 +2,52 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <title>Fotoğrafı WebM Videoya Çevir (Hızlı)</title>
+  <title>Fotoğrafı Videoya Çevir</title>
   <style>
     body {
-      font-family: sans-serif;
+      font-family: Arial, sans-serif;
       text-align: center;
       padding: 2rem;
+      background: #f4f4f4;
     }
-    input, select, button {
+
+    input, button {
       margin: 1rem auto;
       padding: 0.7rem;
       width: 80%;
       max-width: 400px;
       font-size: 1rem;
     }
-    canvas {
-      display: none;
-    }
-    #downloadLink {
+
+    #downloadLink, #convertLink {
       display: none;
       margin-top: 1rem;
       padding: 0.7rem 1.2rem;
       background: #28a745;
       color: white;
-      border-radius: 8px;
+      border-radius: 6px;
       text-decoration: none;
       font-weight: bold;
+    }
+
+    #convertLink {
+      background: #007bff;
+    }
+
+    canvas {
+      display: none;
     }
   </style>
 </head>
 <body>
-  <h1>📷 Fotoğrafı Videoya Çevir (Hızlı)</h1>
+  <h1>📸 Fotoğrafı Videoya Çevir (WebM)</h1>
 
   <input type="file" id="imageInput" accept="image/*" />
   <input type="number" id="durationInput" placeholder="Video süresi (saniye)" min="1" value="5" />
   <button id="startBtn">🎬 Videoya Dönüştür</button>
 
-  <br>
-  <a id="downloadLink" download="video.webm">📥 Videoyu İndir</a>
+  <a id="downloadLink" download="video.webm">📥 Videoyu İndir</a><br />
+  <a id="convertLink" href="https://cloudconvert.com/webm-to-mp4" target="_blank">🎞 MP4'e Dönüştür</a>
 
   <canvas id="canvas"></canvas>
 
@@ -48,6 +56,7 @@
     const durationInput = document.getElementById('durationInput');
     const startBtn = document.getElementById('startBtn');
     const downloadLink = document.getElementById('downloadLink');
+    const convertLink = document.getElementById('convertLink');
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
 
@@ -76,6 +85,9 @@
         return;
       }
 
+      // Yeniden çiz
+      ctx.drawImage(image, 0, 0);
+
       const stream = canvas.captureStream(30); // 30 FPS
       const recorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
 
@@ -86,10 +98,10 @@
         const url = URL.createObjectURL(blob);
         downloadLink.href = url;
         downloadLink.style.display = 'inline-block';
+        convertLink.style.display = 'inline-block';
       };
 
       recorder.start();
-
       setTimeout(() => recorder.stop(), seconds * 1000);
     });
   </script>
