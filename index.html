@@ -6,7 +6,6 @@
     <title>Resimden Videoya Dönüştürücü</title>
     <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
     <style>
-        /* Önceki CSS kodlarını aynen tutuyoruz */
         :root {
             --primary: #4361ee;
             --secondary: #3f37c9;
@@ -34,27 +33,227 @@
             border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
-        /* ... Diğer CSS kuralları aynen kalıyor ... */
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 25px;
+            font-weight: 700;
+        }
+        .upload-area {
+            border: 3px dashed #adb5bd;
+            border-radius: 10px;
+            padding: 40px 20px;
+            text-align: center;
+            margin: 20px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: #f8f9fa;
+            position: relative;
+        }
+        .upload-area:hover {
+            border-color: var(--primary);
+            background-color: #f1f3f5;
+        }
+        .upload-area.active {
+            border-color: var(--primary);
+            background-color: #e9ecef;
+        }
+        .settings {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 25px 0;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        input[type="number"], select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+        input[type="number"]:focus, select:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        button:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        button:disabled {
+            background: #adb5bd;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .preview {
+            margin-top: 30px;
+            text-align: center;
+        }
+        .hidden {
+            display: none !important;
+        }
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1.5s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        #videoOutput {
+            max-width: 100%;
+            margin: 25px 0;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            background: black;
+        }
+        #downloadBtn {
+            display: inline-block;
+            margin-top: 20px;
+            text-decoration: none;
+        }
+        #fileInfo {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #495057;
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 5px;
+            word-break: break-all;
+        }
+        .progress-container {
+            width: 100%;
+            background-color: #e9ecef;
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 10px;
+            background-color: var(--primary);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        .status-text {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 14px;
+            color: #495057;
+        }
+        .file-input {
+            display: none;
+        }
+        .icon {
+            font-size: 24px;
+        }
+        .controls {
+            margin-top: 20px;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 24px;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- HTML yapısı aynen kalıyor -->
         <h1>📸 Resimden Videoya Dönüştürücü</h1>
+        
         <div class="upload-area" id="uploadArea">
-            <div style="font-size: 50px; margin-bottom: 15px;">📁</div>
-            <p style="font-size: 18px; margin-bottom: 10px;">Resmi sürükleyip bırakın veya tıklayarak seçin</p>
+            <div id="uploadIcon" style="font-size: 50px; margin-bottom: 15px;">📁</div>
+            <p id="uploadText" style="font-size: 18px; margin-bottom: 10px;">Resmi sürükleyip bırakın veya tıklayarak seçin</p>
             <p style="color: #6c757d; font-size: 14px;">(JPEG, PNG, GIF destekler)</p>
             <input type="file" id="imageInput" accept="image/*" class="file-input">
             <div id="fileInfo"></div>
         </div>
-        <!-- ... Diğer HTML elemanları aynen kalıyor ... -->
+        
+        <div class="settings">
+            <div class="form-group">
+                <label for="duration">🎬 Video Süresi (saniye)</label>
+                <input type="number" id="duration" min="1" max="60" value="5">
+            </div>
+            
+            <div class="form-group">
+                <label for="format">📁 Çıktı Formatı</label>
+                <select id="format">
+                    <option value="mp4">MP4 (En iyi kalite)</option>
+                    <option value="webm">WebM (Daha küçük boyut)</option>
+                    <option value="gif">GIF (Animasyonlu)</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button id="convertBtn" disabled>
+                <span class="icon">🎥</span>
+                <span>Videoya Dönüştür</span>
+            </button>
+        </div>
+        
+        <div class="preview">
+            <div id="loadingAnimation" class="hidden">
+                <div class="loader"></div>
+                <div class="progress-container">
+                    <div id="progressBar" class="progress-bar"></div>
+                </div>
+                <p id="statusText" class="status-text">FFmpeg yükleniyor, lütfen bekleyin...</p>
+            </div>
+            
+            <video id="videoOutput" controls class="hidden"></video>
+            
+            <a id="downloadBtn" class="hidden" download>
+                <button>
+                    <span class="icon">⬇️</span>
+                    <span>Videoyu İndir</span>
+                </button>
+            </a>
+        </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Elementler
             const uploadArea = document.getElementById('uploadArea');
+            const uploadIcon = document.getElementById('uploadIcon');
+            const uploadText = document.getElementById('uploadText');
             const imageInput = document.getElementById('imageInput');
             const convertBtn = document.getElementById('convertBtn');
             const durationInput = document.getElementById('duration');
@@ -69,21 +268,6 @@
             let selectedImage = null;
             let ffmpeg = null;
             let isFFmpegReady = false;
-
-            // FFmpeg durumunu kontrol etmek için fonksiyon
-            function updateConvertButtonState() {
-                if (selectedImage && isFFmpegReady) {
-                    convertBtn.disabled = false;
-                    convertBtn.innerHTML = '<span class="icon">🎥</span><span>Videoya Dönüştür</span>';
-                } else {
-                    convertBtn.disabled = true;
-                    if (!isFFmpegReady) {
-                        convertBtn.innerHTML = '<span class="icon">⏳</span><span>FFmpeg Yükleniyor...</span>';
-                    } else {
-                        convertBtn.innerHTML = '<span class="icon">🎥</span><span>Videoya Dönüştür</span>';
-                    }
-                }
-            }
 
             // FFmpeg'i yükle
             async function loadFFmpeg() {
@@ -120,6 +304,21 @@
                 }
             }
             
+            // Buton durumunu güncelle
+            function updateConvertButtonState() {
+                if (selectedImage && isFFmpegReady) {
+                    convertBtn.disabled = false;
+                    convertBtn.innerHTML = '<span class="icon">🎥</span><span>Videoya Dönüştür</span>';
+                } else {
+                    convertBtn.disabled = true;
+                    if (!isFFmpegReady) {
+                        convertBtn.innerHTML = '<span class="icon">⏳</span><span>FFmpeg Yükleniyor...</span>';
+                    } else {
+                        convertBtn.innerHTML = '<span class="icon">🎥</span><span>Videoya Dönüştür</span>';
+                    }
+                }
+            }
+
             // Sayfa yüklendiğinde FFmpeg'i yükle
             loadFFmpeg();
             
@@ -166,20 +365,173 @@
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     selectedImage = e.target.result;
-                    uploadArea.innerHTML = `
-                        <img src="${selectedImage}" style="max-width: 100%; max-height: 300px; border-radius: 8px; margin-bottom: 15px;">
-                        <div id="fileInfo">📄 ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB)</div>
-                    `;
+                    // Sadece resmi ekleyip diğer elementleri koruyoruz
+                    uploadIcon.style.display = 'none';
+                    uploadText.style.display = 'none';
+                    const imgPreview = document.createElement('img');
+                    imgPreview.src = selectedImage;
+                    imgPreview.style.maxWidth = '100%';
+                    imgPreview.style.maxHeight = '300px';
+                    imgPreview.style.borderRadius = '8px';
+                    imgPreview.style.marginBottom = '15px';
+                    uploadArea.insertBefore(imgPreview, fileInfo);
+                    
+                    fileInfo.textContent = `📄 ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB)`;
+                    fileInfo.style.display = 'block';
                     
                     updateConvertButtonState();
                 };
                 reader.readAsDataURL(file);
             }
             
-            // ... Diğer fonksiyonlar (createVideo, showAlert vb.) aynen kalıyor ...
+            // Dönüştürme butonu
+            convertBtn.addEventListener('click', async () => {
+                if (!selectedImage) return;
+                
+                const duration = parseInt(durationInput.value);
+                const format = formatSelect.value;
+                
+                // Yükleme animasyonunu göster
+                loadingAnimation.classList.remove('hidden');
+                videoOutput.classList.add('hidden');
+                downloadBtn.classList.add('hidden');
+                statusText.textContent = "Video oluşturuluyor...";
+                
+                try {
+                    await createVideo(selectedImage, duration, format);
+                } catch (error) {
+                    console.error("Dönüşüm hatası:", error);
+                    statusText.textContent = `Hata: ${error.message}`;
+                    setTimeout(() => {
+                        loadingAnimation.classList.add('hidden');
+                    }, 3000);
+                }
+            });
             
-            // Buton durumunu ilk yüklemede ayarla
-            updateConvertButtonState();
+            async function createVideo(imageData, duration, format) {
+                if (!ffmpeg || !ffmpeg.isLoaded()) {
+                    await loadFFmpeg();
+                }
+                
+                // Resmi yükle
+                statusText.textContent = "Resim işleniyor...";
+                progressBar.style.width = "10%";
+                
+                const imageType = imageData.split(';')[0].split(':')[1];
+                const extension = imageType.split('/')[1];
+                const inputName = `input.${extension}`;
+                
+                try {
+                    const response = await fetch(imageData);
+                    const imageBlob = await response.blob();
+                    await ffmpeg.FS('writeFile', inputName, await fetchFile(imageBlob));
+                    
+                    // FFmpeg komutunu çalıştır
+                    statusText.textContent = "Video oluşturuluyor...";
+                    progressBar.style.width = "30%";
+                    
+                    const outputName = `output.${format}`;
+                    let command = [
+                        '-loop', '1',
+                        '-i', inputName,
+                        '-t', duration.toString(),
+                        '-vf', 'scale=trunc(iw/2)*2:trunc(ih/2)*2', // Çift sayıya yuvarla
+                        '-pix_fmt', 'yuv420p'
+                    ];
+                    
+                    // Format özel ayarlar
+                    if (format === 'mp4') {
+                        command.push('-c:v', 'libx264', '-preset', 'medium', '-crf', '23');
+                    } else if (format === 'webm') {
+                        command.push('-c:v', 'libvpx-vp9', '-b:v', '1M', '-quality', 'good');
+                    } else if (format === 'gif') {
+                        command = [
+                            '-i', inputName,
+                            '-t', duration.toString(),
+                            '-vf', 'fps=15,scale=640:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse',
+                            '-loop', '0'
+                        ];
+                    }
+                    
+                    command.push(outputName);
+                    
+                    // FFmpeg çalıştır
+                    await ffmpeg.run(...command);
+                    progressBar.style.width = "80%";
+                    statusText.textContent = "Video hazırlanıyor...";
+                    
+                    // Sonucu al
+                    const data = ffmpeg.FS('readFile', outputName);
+                    const mimeType = format === 'gif' ? 'image/gif' : `video/${format}`;
+                    const videoUrl = URL.createObjectURL(new Blob([data.buffer], { type: mimeType }));
+                    
+                    // Bellek temizle
+                    ffmpeg.FS('unlink', inputName);
+                    ffmpeg.FS('unlink', outputName);
+                    
+                    // Sonucu göster
+                    progressBar.style.width = "100%";
+                    statusText.textContent = "Video başarıyla oluşturuldu!";
+                    
+                    setTimeout(() => {
+                        loadingAnimation.classList.add('hidden');
+                        videoOutput.src = videoUrl;
+                        videoOutput.classList.remove('hidden');
+                        downloadBtn.href = videoUrl;
+                        downloadBtn.download = `video_${new Date().getTime()}.${format}`;
+                        downloadBtn.classList.remove('hidden');
+                        progressBar.style.width = "0%";
+                    }, 500);
+                    
+                } catch (error) {
+                    console.error("FFmpeg hatası:", error);
+                    throw new Error("Video oluşturulurken teknik bir hata oluştu.");
+                }
+            }
+            
+            function showAlert(message, type = 'info') {
+                const alertBox = document.createElement('div');
+                alertBox.style.position = 'fixed';
+                alertBox.style.top = '20px';
+                alertBox.style.right = '20px';
+                alertBox.style.padding = '15px 25px';
+                alertBox.style.borderRadius = '8px';
+                alertBox.style.color = 'white';
+                alertBox.style.fontWeight = 'bold';
+                alertBox.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+                alertBox.style.zIndex = '1000';
+                alertBox.style.animation = 'slideIn 0.3s forwards';
+                
+                if (type === 'error') {
+                    alertBox.style.background = 'var(--danger)';
+                } else {
+                    alertBox.style.background = 'var(--primary)';
+                }
+                
+                alertBox.textContent = message;
+                document.body.appendChild(alertBox);
+                
+                setTimeout(() => {
+                    alertBox.style.animation = 'slideOut 0.3s forwards';
+                    setTimeout(() => {
+                        document.body.removeChild(alertBox);
+                    }, 300);
+                }, 3000);
+            }
+            
+            // CSS animasyonları için style ekle
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideIn {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+                @keyframes slideOut {
+                    from { transform: translateX(0); opacity: 1; }
+                    to { transform: translateX(100%); opacity: 0; }
+                }
+            `;
+            document.head.appendChild(style);
         });
     </script>
 </body>
