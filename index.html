@@ -1,302 +1,106 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fotoğraftan Videoya Dönüştürücü</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        .container {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 500px;
-            text-align: center;
-        }
-
-        h1 {
-            color: #333;
-            margin-bottom: 25px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-            text-align: left;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #555;
-            font-weight: bold;
-        }
-
-        input[type="file"] {
-            display: none; /* Gizli dosya girişi */
-        }
-
-        .file-upload-label {
-            display: block;
-            background-color: #007bff;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            text-align: center;
-            transition: background-color 0.3s ease;
-            margin-bottom: 10px;
-        }
-
-        .file-upload-label:hover {
-            background-color: #0056b3;
-        }
-
-        #fileName {
-            margin-top: 5px;
-            color: #777;
-            font-style: italic;
-            text-align: center;
-            word-break: break-all;
-        }
-
-        input[type="number"],
-        select {
-            width: calc(100% - 20px);
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-
-        button {
-            background-color: #28a745;
-            color: white;
-            padding: 12px 25px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s ease;
-            width: 100%;
-        }
-
-        button:hover {
-            background-color: #218838;
-        }
-
-        button:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-        }
-
-        .loading-animation {
-            display: none;
-            margin-top: 20px;
-            text-align: center;
-        }
-
-        .spinner {
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            border-left-color: #007bff;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 10px auto;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        #statusMessage {
-            margin-top: 15px;
-            color: #666;
-            font-size: 14px;
-        }
-
-        #downloadLink {
-            display: none;
-            margin-top: 20px;
-            background-color: #007bff;
-            color: white;
-            padding: 12px 25px;
-            border-radius: 5px;
-            text-decoration: none;
-            font-size: 16px;
-            display: inline-block; /* Ortalamak için */
-            transition: background-color 0.3s ease;
-        }
-
-        #downloadLink:hover {
-            background-color: #0056b3;
-        }
-    </style>
-    <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.7/dist/ffmpeg.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fotoğrafı Videoya Dönüştür</title>
+  <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.2/dist/ffmpeg.min.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+      text-align: center;
+    }
+    input, select, button {
+      margin: 1rem;
+      padding: 0.5rem;
+    }
+    #loading {
+      display: none;
+    }
+    .spinner {
+      border: 4px solid rgba(0,0,0,0.1);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border-left-color: #09f;
+      animation: spin 1s ease infinite;
+      margin: 1rem auto;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Fotoğraftan Videoya Dönüştürücü</h1>
+  <h1>Fotoğrafı Videoya Dönüştür</h1>
+  <input type="file" id="imageInput" accept="image/*" />
+  <br />
+  <label>Süre (saniye):</label>
+  <input type="number" id="durationInput" value="5" min="1" />
+  <label>Format:</label>
+  <select id="formatSelect">
+    <option value="mp4">MP4</option>
+    <option value="webm">WebM</option>
+  </select>
+  <br />
+  <button onclick="convertToVideo()">Videoya Dönüştür</button>
 
-        <div class="form-group">
-            <label for="imageUpload" class="file-upload-label">
-                Fotoğraf Yükle
-            </label>
-            <input type="file" id="imageUpload" accept="image/*">
-            <div id="fileName">Henüz dosya seçilmedi.</div>
-        </div>
+  <div id="loading">
+    <div class="spinner"></div>
+    <p>Dönüştürülüyor...</p>
+  </div>
 
-        <div class="form-group">
-            <label for="duration">Video Süresi (Saniye)</label>
-            <input type="number" id="duration" value="5" min="1" max="60">
-        </div>
+  <a id="downloadLink" style="display: none;" download="output">Videoyu İndir</a>
 
-        <div class="form-group">
-            <label for="format">Video Formatı</label>
-            <select id="format">
-                <option value="mp4">MP4</option>
-                <option value="webm">WebM</option>
-            </select>
-        </div>
+  <script>
+    const { createFFmpeg, fetchFile } = FFmpeg;
+    const ffmpeg = createFFmpeg({ log: true });
 
-        <button id="convertButton" disabled>Videoya Dönüştür</button>
+    async function convertToVideo() {
+      const imageFile = document.getElementById("imageInput").files[0];
+      const duration = parseInt(document.getElementById("durationInput").value);
+      const format = document.getElementById("formatSelect").value;
 
-        <div class="loading-animation" id="loadingAnimation">
-            <div class="spinner"></div>
-            <div id="statusMessage">Dönüştürülüyor...</div>
-        </div>
+      if (!imageFile || isNaN(duration)) {
+        alert("Lütfen geçerli bir fotoğraf ve süre girin.");
+        return;
+      }
 
-        <a id="downloadLink" style="display: none;">Videoyu İndir</a>
-    </div>
+      document.getElementById("loading").style.display = "block";
+      document.getElementById("downloadLink").style.display = "none";
 
-    <script>
-        const { createFFmpeg, fetchFile } = FFmpeg;
-        const ffmpeg = createFFmpeg({ log: true, corePath: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.4/dist/ffmpeg-core.js' }); // corePath'i doğruca CDN'den alıyor
+      if (!ffmpeg.isLoaded()) {
+        await ffmpeg.load();
+      }
 
-        const imageUpload = document.getElementById('imageUpload');
-        const fileNameDisplay = document.getElementById('fileName');
-        const durationInput = document.getElementById('duration');
-        const formatSelect = document.getElementById('format');
-        const convertButton = document.getElementById('convertButton');
-        const loadingAnimation = document.getElementById('loadingAnimation');
-        const statusMessage = document.getElementById('statusMessage');
-        const downloadLink = document.getElementById('downloadLink');
+      const imageName = "input." + imageFile.name.split(".").pop();
+      ffmpeg.FS("writeFile", imageName, await fetchFile(imageFile));
 
-        let selectedImage = null;
+      const outputName = `output.${format}`;
 
-        // FFmpeg yüklenmeye başladığında butonları devre dışı bırak
-        ffmpeg.load().then(() => {
-            console.log("FFmpeg yüklendi.");
-            // Eğer dosya seçiliyse, FFmpeg yüklendikten sonra dönüştürme butonunu etkinleştir.
-            // Aksi takdirde, dosya seçilene kadar bekler.
-            if (selectedImage) {
-                convertButton.disabled = false;
-            }
-        }).catch(err => {
-            console.error("FFmpeg yüklenirken bir hata oluştu:", err);
-            statusMessage.textContent = "Hata: Dönüştürücü yüklenemedi. Lütfen sayfayı yenileyin.";
-            convertButton.disabled = true;
-        });
+      await ffmpeg.run(
+        "-loop", "1",
+        "-i", imageName,
+        "-c:v", "libx264",
+        "-t", duration.toString(),
+        "-pix_fmt", "yuv420p",
+        "-vf", "scale=trunc(iw/2)*2:trunc(ih/2)*2",
+        outputName
+      );
 
-        imageUpload.addEventListener('change', (e) => {
-            selectedImage = e.target.files[0];
-            if (selectedImage) {
-                fileNameDisplay.textContent = `Seçilen dosya: ${selectedImage.name}`;
-                // FFmpeg yüklendiyse butonu etkinleştir
-                if (ffmpeg.is  && ffmpeg.isLoaded()) {
-                    convertButton.disabled = false;
-                }
-                downloadLink.style.display = 'none'; // Yeni dosya seçildiğinde indirme linkini gizle
-            } else {
-                fileNameDisplay.textContent = 'Henüz dosya seçilmedi.';
-                convertButton.disabled = true;
-            }
-        });
+      const data = ffmpeg.FS("readFile", outputName);
+      const videoBlob = new Blob([data.buffer], { type: `video/${format}` });
+      const url = URL.createObjectURL(videoBlob);
 
-        convertButton.addEventListener('click', async () => {
-            if (!selectedImage) {
-                alert('Lütfen önce bir fotoğraf seçin!');
-                return;
-            }
+      const downloadLink = document.getElementById("downloadLink");
+      downloadLink.href = url;
+      downloadLink.download = `converted.${format}`;
+      downloadLink.textContent = "Videoyu İndir";
+      downloadLink.style.display = "inline-block";
 
-            convertButton.disabled = true;
-            imageUpload.disabled = true;
-            durationInput.disabled = true;
-            formatSelect.disabled = true;
-            loadingAnimation.style.display = 'block';
-            statusMessage.textContent = 'Dönüştürülüyor... Lütfen bekleyin.';
-            downloadLink.style.display = 'none';
-
-            const duration = durationInput.value;
-            const format = formatSelect.value;
-            const outputFileName = `video.${format}`;
-
-            try {
-                // Bellek dosyasına fotoğrafı yaz
-                ffmpeg.FS('writeFile', selectedImage.name, await fetchFile(selectedImage));
-
-                // FFmpeg komutu
-                // -loop 1: Tek resmi döngüye al
-                // -i [input]: Giriş dosyası
-                // -t [duration]: Çıkış süresi (saniye)
-                // -c:v [codec]: Video codec'i (libx264 MP4 için, libvpx-vp9 WebM için önerilir)
-                // -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2": Genişlik ve yüksekliği çift sayıya yuvarlayarak uyumluluk sağlar
-                // -pix_fmt yuv420p: Tarayıcı uyumluluğu için piksel formatı
-                // -preset veryfast: Daha hızlı dönüştürme için ön ayar
-                // -crf 23: Kalite ayarı (düşük değer = yüksek kalite, yüksek değer = düşük kalite)
-                const videoCodec = format === 'mp4' ? 'libx264' : 'libvpx-vp9'; // Basit seçim
-                const args = [
-                    '-loop', '1',
-                    '-i', selectedImage.name,
-                    '-t', duration.toString(),
-                    '-c:v', videoCodec,
-                    '-vf', 'scale=trunc(iw/2)*2:trunc(ih/2)*2', // Video boyutunu çift sayıya yuvarlama
-                    '-pix_fmt', 'yuv420p',
-                    '-preset', 'veryfast',
-                    '-crf', '23',
-                    outputFileName
-                ];
-
-                await ffmpeg.run(...args);
-
-                // Oluşturulan videoyu oku
-                const data = ffmpeg.FS('readFile', outputFileName);
-
-                // Blob oluştur ve indirme linki hazırla
-                const videoBlob = new Blob([data.buffer], { type: `video/${format}` });
-                const videoUrl = URL.createObjectURL(videoBlob);
-
-                downloadLink.href = videoUrl;
-                downloadLink.download = outputFileName;
-                downloadLink.style.display = 'inline-block';
-                statusMessage.textContent = 'Dönüştürme tamamlandı!';
-
-            } catch (error) {
-                console.error('Video dönüştürme hatası:', error);
-                statusMessage.textContent = `Hata oluştu: ${error.message}. Lütfen tekrar deneyin.`;
-                alert('Video dönüştürme sırasında bir hata oluştu. Konsolu kontrol edin.');
-            } finally {
-                convertButton.disabled = false;
-                imageUpload.disabled = false;
-                durationInput.disabled = false;
-                formatSelect.disabled = false;
-                loadingAnimation.style.display = 'none';
-            }
-        });
-    </script>
+      document.getElementById("loading").style.display = "none";
+    }
+  </script>
 </body>
 </html>
