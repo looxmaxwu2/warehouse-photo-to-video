@@ -1,78 +1,141 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Fotoğrafı Videoya Dönüştür - MP4 Desteği</title>
-  <style>
-    /* Stil kodların aynı kaldı (önceki kodun aynısıdır) */
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #121212;
-      color: #E0E0E0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-    .container {
-      background: #1E1E2F;
-      border-radius: 24px;
-      box-shadow: 0 20px 60px rgba(30, 64, 175, 0.4);
-      padding: 3rem 3.5rem;
-      max-width: 380px;
-      width: 100%;
-      text-align: center;
-    }
-    .container:hover { box-shadow: 0 25px 80px rgba(37, 99, 235, 0.7); }
-    h2 { font-weight: 700; font-size: 1.8rem; margin-bottom: 1.8rem; color: #4F8EF7; }
-    input[type="file"], input[type="number"] {
-      width: 100%; padding: 14px 16px; margin: 12px 0; font-size: 1rem;
-      border-radius: 12px; border: 1.8px solid #33354A;
-      background-color: #2B2B3F; color: #E0E0E0;
-    }
-    button {
-      margin-top: 18px; width: 100%; padding: 16px 0; font-size: 1.1rem;
-      font-weight: 600; color: white; background-color: #4F8EF7;
-      border: none; border-radius: 14px; cursor: pointer;
-    }
-    button:disabled { background-color: #6C7BBD; cursor: not-allowed; }
-    #loading {
-      margin-top: 16px; font-weight: 700; color: #4F8EF7;
-      animation: pulse 1.3s infinite;
-    }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-    #videoContainer { margin-top: 24px; }
-    video {
-      width: 100%; border-radius: 18px;
-      box-shadow: 0 8px 24px rgba(79, 142, 247, 0.6);
-      background-color: black;
-    }
-    a {
-      display: inline-block; margin-top: 16px; font-weight: 700;
-      color: #4F8EF7; text-decoration: none;
-    }
-    a:hover { text-decoration: underline; }
-  </style>
-  <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.2/dist/ffmpeg.min.js"></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Fotoğrafı Videoya Dönüştür - w-vv.space Tema (Karanlık Tema)</title>
+<style>
+  /* Reset */
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #121212;
+    color: #E0E0E0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+
+  .container {
+    background: #1E1E2F;
+    border-radius: 24px;
+    box-shadow: 0 20px 60px rgba(30, 64, 175, 0.4);
+    padding: 3rem 3.5rem;
+    max-width: 380px;
+    width: 100%;
+    text-align: center;
+    transition: box-shadow 0.3s ease;
+  }
+  .container:hover {
+    box-shadow: 0 25px 80px rgba(37, 99, 235, 0.7);
+  }
+
+  h2 {
+    font-weight: 700;
+    font-size: 1.8rem;
+    margin-bottom: 1.8rem;
+    color: #4F8EF7;
+  }
+
+  input[type="file"],
+  input[type="number"] {
+    width: 100%;
+    padding: 14px 16px;
+    margin: 12px 0;
+    font-size: 1rem;
+    border-radius: 12px;
+    border: 1.8px solid #33354A;
+    background-color: #2B2B3F;
+    color: #E0E0E0;
+    transition: border-color 0.3s ease, background-color 0.3s ease;
+    outline-offset: 2px;
+  }
+  input[type="file"]:focus,
+  input[type="number"]:focus {
+    border-color: #4F8EF7;
+    background-color: #383955;
+  }
+
+  button {
+    margin-top: 18px;
+    width: 100%;
+    padding: 16px 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: white;
+    background-color: #4F8EF7;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    box-shadow: 0 8px 16px rgba(79, 142, 247, 0.6);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  button:hover:not(:disabled) {
+    background-color: #3B6BD1;
+    box-shadow: 0 10px 24px rgba(59, 107, 209, 0.8);
+  }
+  button:disabled {
+    background-color: #6C7BBD;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+
+  #loading {
+    margin-top: 16px;
+    font-weight: 700;
+    color: #4F8EF7;
+    animation: pulse 1.3s infinite;
+    user-select: none;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  #videoContainer {
+    margin-top: 24px;
+  }
+
+  video {
+    width: 100%;
+    border-radius: 18px;
+    box-shadow: 0 8px 24px rgba(79, 142, 247, 0.6);
+    outline-offset: 2px;
+    background-color: black;
+  }
+
+  a {
+    display: inline-block;
+    margin-top: 16px;
+    font-weight: 700;
+    color: #4F8EF7;
+    text-decoration: none;
+    font-size: 1.05rem;
+    user-select: none;
+  }
+  a:hover {
+    text-decoration: underline;
+  }
+</style>
 </head>
 <body>
-  <div class="container">
+  <div class="container" role="main" aria-label="Fotoğrafı videoya dönüştürme arayüzü">
     <h2>Fotoğrafı Videoya Dönüştür</h2>
-    <input type="file" id="imgInput" accept="image/*" />
-    <input type="number" id="duration" min="1" value="10" />
+    <input type="file" id="imgInput" accept="image/*" aria-label="Fotoğraf seçin" />
+    <input type="number" id="duration" min="1" value="10" aria-label="Video süresi (saniye)" />
     <button id="startBtn" disabled>Videoya Dönüştür</button>
-    <div id="loading" style="display:none;">🎬 Video oluşturuluyor, lütfen bekleyin...</div>
+    <div id="loading" aria-live="polite" style="display:none;">🎬 Video oluşturuluyor, lütfen bekleyin...</div>
     <div id="videoContainer"></div>
     <canvas id="canvas" style="display:none;"></canvas>
   </div>
 
 <script>
-  const { createFFmpeg, fetchFile } = FFmpeg;
-  const ffmpeg = createFFmpeg({ log: true });
-
   const imgInput = document.getElementById('imgInput');
   const startBtn = document.getElementById('startBtn');
   const loading = document.getElementById('loading');
@@ -99,10 +162,16 @@
     startBtn.disabled = false;
   };
 
-  startBtn.addEventListener('click', async () => {
-    if (!imgLoaded) return alert('Lütfen bir fotoğraf yükleyin.');
+  startBtn.addEventListener('click', () => {
+    if (!imgLoaded) {
+      alert('Lütfen bir fotoğraf yükleyin.');
+      return;
+    }
     const duration = parseInt(durationInput.value);
-    if (isNaN(duration) || duration < 1) return alert('Geçerli bir süre girin.');
+    if (isNaN(duration) || duration < 1) {
+      alert('Geçerli bir video süresi girin.');
+      return;
+    }
 
     const totalDuration = duration + 5;
     const fps = 30;
@@ -118,50 +187,34 @@
 
     recorder.ondataavailable = e => chunks.push(e.data);
     recorder.onstop = async () => {
-      const webmBlob = new Blob(chunks, { type: 'video/webm' });
-      const webmUrl = URL.createObjectURL(webmBlob);
-
-      videoContainer.innerHTML = '';
-      const video = document.createElement('video');
-      video.src = webmUrl;
-      video.controls = true;
-      video.currentTime = 5;
-      videoContainer.appendChild(video);
-
-      const downloadWebm = document.createElement('a');
-      downloadWebm.href = webmUrl;
-      downloadWebm.download = 'video.webm';
-      downloadWebm.textContent = '📥 WebM İndir';
-      videoContainer.appendChild(downloadWebm);
-
-      // FFmpeg ile MP4'e çevir
-      loading.innerText = '🔄 MP4\'e dönüştürülüyor...';
-      loading.style.display = 'block';
-
-      if (!ffmpeg.isLoaded()) await ffmpeg.load();
-
-      ffmpeg.FS('writeFile', 'input.webm', await fetchFile(webmBlob));
-      await ffmpeg.run('-i', 'input.webm', '-c:v', 'libx264', '-preset', 'fast', '-crf', '23', 'output.mp4');
-      const mp4Data = ffmpeg.FS('readFile', 'output.mp4');
-      const mp4Blob = new Blob([mp4Data.buffer], { type: 'video/mp4' });
-      const mp4Url = URL.createObjectURL(mp4Blob);
-
-      const downloadMp4 = document.createElement('a');
-      downloadMp4.href = mp4Url;
-      downloadMp4.download = 'video.mp4';
-      downloadMp4.textContent = '📥 MP4 İndir';
-      videoContainer.appendChild(downloadMp4);
+      const fullBlob = new Blob(chunks, { type: 'video/webm' });
+      const url = URL.createObjectURL(fullBlob);
 
       loading.style.display = 'none';
+      videoContainer.innerHTML = '';
+
+      const video = document.createElement('video');
+      video.src = url;
+      video.controls = true;
+      video.autoplay = false;
+      video.currentTime = 5;
+
+      videoContainer.appendChild(video);
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'foto_video.webm';
+      a.textContent = '📥 Videoyu İndir';
+      videoContainer.appendChild(a);
     };
 
-    loading.innerText = '🎬 Video oluşturuluyor, lütfen bekleyin...';
     loading.style.display = 'block';
+    videoContainer.innerHTML = '';
     startBtn.disabled = true;
 
     recorder.start();
-    let frameCount = 0;
 
+    let frameCount = 0;
     function drawFrame() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0);
